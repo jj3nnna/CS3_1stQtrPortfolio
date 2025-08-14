@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+    <h2> Q1 3rd Graded Exercise submitted by Jenna Angela Guiang of 9 - Sodium</h2>
+
+    <!-- Enter your tags below until the script tag -->
+    
+    <label for="in1">Meal Price:</label>
+    <input id="in1" type="number"> <br>
+    <label for="in2">Tip:</label>
+    <input id="in2" type="number"> <br>
+    <label for="in3">Service Charge:</label>
+    <input id="in3" type="number"> <br>
+    <button onclick="totalMeal()">Accept Input</button> <br>
+    
+    <script>
+        function totalMeal() {
+              // place your JS code here
+            var mp = parseFloat(document.getElementById("in1").value);
+            var tip = parseFloat(document.getElementById("in2").value);
+            var sc = parseFloat(document.getElementById("in3").value);
+
+            var totalCost = mp + tip + (sc / 100 * mp);
+
+            var resultParagraph = document.createElement("p");
+            resultParagraph.textContent = "Total Meal: " + totalCost.toFixed(2);
+            document.body.appendChild(resultParagraph);
+         
+        }
+    </script>
+
+</body>
+</html>
