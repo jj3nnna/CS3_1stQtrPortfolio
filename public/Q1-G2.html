@@ -1,0 +1,34 @@
+<h1> Jenna Angela Guiang - 9-Na - Aug. 11, 2025 </h1>
+
+<h2> Second Graded Exercise - First Quarter </h2>
+
+<p> Here's a list of my friends </p>
+<label for="in1">Friend 1:</label>
+<input id="in1" type="text" placeholder="Enter first friend's name"> <br>
+<label for="in1">Friend 2:</label>
+<input id="in2" type="date"placeholder="Enter second friend's name"> <br>
+<button onclick="addFriend()">Add Friend</button>
+
+<div id="out1" style="border: 1px solid black; "></div>
+
+
+</div>
+
+<!-- this is an html comment -->
+
+<script>
+        // this is a javascript comment
+
+function addFriend() {
+    var friend1 = document.getElementById("in1").value;
+    var friend2 = document.getElementById("in2").value;
+
+    if (friend1 && friend2) {
+        var output = document.getElementById("out1");
+        output.innerHTML += "<p>" + friend1 + " and " + friend2 + " are friends.</p>";
+    } else {
+        alert("Please enter both friends' names.");
+    }
+}
+    
+</script>
