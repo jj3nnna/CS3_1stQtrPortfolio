@@ -1,238 +1,167 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Centralized Club Application</title>
-    <style>
-        :root{
-            --accent:#2563eb;
-            --danger:#dc2626;
-            --muted:#6b7280;
-            --bg:#f8fafc;
-            --card:#ffffff;
-        }
+<meta charset="UTF-8">
+<title>Centralized Club Application Form</title>
 
-        body{
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-            background: linear-gradient(180deg, #eef2ff 0%, #ffffff 100%);
-            margin: 2rem;
-            color:#111827;
-        }
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f6f8;
+    }
 
-        form{
-            max-width:760px;
-            margin:0 auto;
-            background:var(--card);
-            padding:1.25rem;
-            border-radius:8px;
-            box-shadow:0 6px 18px rgba(16,24,40,0.08);
-            border:1px solid rgba(15,23,42,0.04);
-        }
+    form {
+        width: 500px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
 
-        fieldset{
-            border:1px solid rgba(15,23,42,0.06);
-            padding:0.75rem 1rem 1rem;
-            margin:0 0 1rem;
-            border-radius:6px;
-        }
+    fieldset {
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        padding: 15px;
+    }
 
-        legend{
-            font-weight:600;
-            color:var(--accent);
-            padding:0 0.25rem;
-        }
+    legend {
+        font-weight: bold;
+    }
 
-        label{
-            display:block;
-            margin:0.6rem 0;
-            font-size:0.95rem;
-            color:#0f172a;
-        }
+    label {
+        display: block;
+        margin-bottom: 10px;
+    }
 
-        label > span.prompt{
-            display:block;
-            margin-bottom:0.35rem;
-            color:var(--muted);
-            font-size:0.88rem;
-        }
+    input, select, textarea {
+        width: 100%;
+        padding: 6px;
+        margin-top: 5px;
+    }
 
-        input[type="text"],
-        input[type="number"],
-        input[type="date"],
-        input[type="email"],
-        select,
-        textarea {
-            width:100%;
-            box-sizing:border-box;
-            padding:0.5rem 0.6rem;
-            border:1px solid #e6eef8;
-            border-radius:6px;
-            background: #fff;
-            font-size:1rem;
-            transition:box-shadow .12s, border-color .12s, background-color .12s;
-        }
+    /* Focus pseudo-class */
+    input:focus, select:focus, textarea:focus {
+        border: 2px solid #0077cc;
+        background-color: #eef7ff;
+        outline: none;
+    }
 
-        /* focus pseudo-class style as requested */
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 4px rgba(37,99,235,0.08);
-            background:#f8fbff;
-        }
+    /* Style for empty fields on blur */
+    .invalid {
+        border: 2px solid red;
+        background-color: #ffecec;
+    }
 
-        /* style for fields left empty after blur */
-        .missing {
-            border-color: var(--danger) !important;
-            box-shadow: 0 0 0 4px rgba(220,38,38,0.06);
-            background: #fff7f7;
-        }
+    .buttons {
+        text-align: center;
+    }
 
-        .radio-group{
-            display:flex;
-            gap:0.75rem;
-            align-items:center;
-            margin-top:0.15rem;
-        }
+    .buttons input {
+        width: 120px;
+        margin: 5px;
+        padding: 8px;
+    }
+</style>
 
-        .actions{
-            display:flex;
-            gap:0.75rem;
-            justify-content:flex-end;
-            margin-top:0.5rem;
-        }
+<script>
+    function confirmSubmit() {
+        return confirm("Are you sure you want to submit this application?");
+    }
 
-        button{
-            padding:0.55rem 0.9rem;
-            border-radius:6px;
-            border:1px solid rgba(2,6,23,0.08);
-            cursor:pointer;
-            font-weight:600;
-            background:linear-gradient(#fff,#f8fafc);
-        }
+    function confirmReset() {
+        return confirm("Are you sure you want to reset the form?");
+    }
 
-        button[type="submit"]{
-            background: linear-gradient(180deg, var(--accent), #1d4ed8);
-            color:#fff;
-            border-color: rgba(13,42,148,0.4);
+    function checkEmpty(element) {
+        if (element.value.trim() === "") {
+            element.classList.add("invalid");
+        } else {
+            element.classList.remove("invalid");
         }
-
-        button[type="reset"]{
-            background:#fff;
-            color:#374151;
-        }
-
-        /* small helper */
-        .note { font-size:0.85rem; color:var(--muted); margin-bottom:0.5rem; }
-    </style>
+    }
+</script>
 </head>
+
 <body>
-    <form method="post" action="submit"
-                onsubmit="return confirm('Submit application? Click OK to proceed.');"
-                onreset="return confirm('Reset the form? All entered data will be cleared.');">
-        <h2 style="margin:0 0 0.6rem;">Centralized Club / Organization Application</h2>
-        <p class="note">All fields are required. Fields left blank after blur will be highlighted.</p>
 
-        <fieldset>
-            <legend>Basic Student Information (1–4)</legend>
+<form method="post" action="submit" onsubmit="return confirmSubmit()" onreset="return confirmReset()">
 
-            <label>
-                <span class="prompt">Student ID (numeric)</span>
-                <input type="number" name="studentId" required />
-            </label>
+    <!-- Fieldset 1: Information #1 to #4 -->
+    <fieldset>
+        <legend>Personal Information</legend>
 
-            <label>
-                <span class="prompt">Full Name</span>
-                <input type="text" name="fullName" required onblur="markIfEmpty(this)" />
-            </label>
+        <label>
+            Student ID:
+            <input type="number" name="student_id" required onblur="checkEmpty(this)">
+        </label>
 
-            <label>
-                <span class="prompt">Birthday</span>
-                <input type="date" name="birthday" required />
-            </label>
+        <label>
+            Full Name:
+            <input type="text" name="full_name" required onblur="checkEmpty(this)">
+        </label>
 
-            <label>
-                <span class="prompt">Email address</span>
-                <input type="email" name="email" required />
-            </label>
-        </fieldset>
+        <label>
+            Birthday:
+            <input type="date" name="birthday" required>
+        </label>
 
-        <fieldset>
-            <legend>Contact & Preferences (5–9)</legend>
+        <label>
+            Email Address:
+            <input type="email" name="email" required onblur="checkEmpty(this)">
+        </label>
+    </fieldset>
 
-            <label>
-                <span class="prompt">Mobile phone</span>
-                <input type="text" name="mobile" required onblur="markIfEmpty(this)" />
-            </label>
+    <!-- Fieldset 2: Information #5 to #8 -->
+    <fieldset>
+        <legend>Application Details</legend>
 
-            <label>
-                <span class="prompt">Grade Level</span>
-                <select name="gradeLevel" required>
-                    <option value="">-- choose grade --</option>
-                    <option value="grade7">7th Grade</option>
-                    <option value="grade8">8th Grade</option>
-                    <option value="grade9">9th Grade</option>
-                    <option value="grade10">10th Grade</option>
-                    <option value="grade11">11th Grade</option>
-                    <option value="grade12">12th Grade</option>
-                </select>
-            </label>
+        <label>
+            Mobile Phone:
+            <input type="text" name="mobile" required onblur="checkEmpty(this)">
+        </label>
 
-            <label>
-                <span class="prompt">Intern / Extern</span>
-                <div class="radio-group">
-                    <label style="display:inline-flex;align-items:center;gap:0.4rem;">
-                        <input type="radio" name="placement" value="I" required /> <span>Intern</span>
-                    </label>
-                    <label style="display:inline-flex;align-items:center;gap:0.4rem;">
-                        <input type="radio" name="placement" value="E" required /> <span>Extern</span>
-                    </label>
-                </div>
-            </label>
+        <label>
+            Grade Level:
+            <select name="grade_level" required>
+                <option value="">-- Select --</option>
+                <option value="g7">Grade 7</option>
+                <option value="g8">Grade 8</option>
+                <option value="g9">Grade 9</option>
+                <option value="g10">Grade 10</option>
+            </select>
+        </label>
 
-            <label>
-                <span class="prompt">Preferred Organization / Club</span>
-                <select name="preferredClub" required>
-                    <option value="">-- select a club --</option>
-                    <option value="club_sports">Sports Club</option>
-                    <option value="club_arts">Arts & Crafts</option>
-                    <option value="club_science">Science & Robotics</option>
-                    <option value="club_debate">Debate & Public Speaking</option>
-                    <option value="club_env">Environmental Action</option>
-                </select>
-            </label>
+        <label>
+            Intern / Extern:
+            <input type="radio" name="status" value="int" required> Intern
+            <input type="radio" name="status" value="ext"> Extern
+        </label>
 
-            <label>
-                <span class="prompt">Why do you want to join?</span>
-                <textarea name="reason" rows="5" required onblur="markIfEmpty(this)"></textarea>
-            </label>
-        </fieldset>
+        <label>
+            Preferred Organization / Club:
+            <select name="club" required>
+                <option value="">-- Select --</option>
+                <option value="art">Art Club</option>
+                <option value="sports">Sports Club</option>
+                <option value="music">Music Society</option>
+                <option value="science">Science Club</option>
+                <option value="volunteer">Volunteer Group</option>
+            </select>
+        </label>
 
-        <div class="actions">
-            <button type="reset">Reset</button>
-            <button type="submit">Submit Application</button>
-        </div>
-    </form>
+        <label>
+            Why do you want to join?
+            <textarea name="reason" rows="4" required onblur="checkEmpty(this)"></textarea>
+        </label>
+    </fieldset>
 
-    <script>
-        // Called on blur for text inputs and textarea to mark empty fields
-        function markIfEmpty(el){
-            if(!el) return;
-            var val = (el.value || "").toString().trim();
-            if(val === ""){
-                el.classList.add('missing');
-            } else {
-                el.classList.remove('missing');
-            }
-        }
+    <div class="buttons">
+        <input type="submit" value="Submit">
+        <input type="reset" value="Reset">
+    </div>
 
-        // Optional: ensure missing highlights are removed when user types
-        document.addEventListener('input', function(e){
-            var t = e.target;
-            if(t && t.classList && t.classList.contains('missing')){
-                if((t.value || '').toString().trim() !== '') t.classList.remove('missing');
-            }
-        });
-    </script>
+</form>
+
 </body>
 </html>
