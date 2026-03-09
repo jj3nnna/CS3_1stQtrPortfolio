@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Tracker</title>
+    <style>
+        /* CSS Implementation */
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #444;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Star Rating Form Styles */
+        .rating-container {
+            display: flex;
+            gap: 5px;
+            font-size: 24px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .star {
+            color: #ccc; /* Default gray star */
+            transition: color 0.2s;
+        }
+
+        .star.active {
+            color: #ffd700; /* Yellow star */
+        }
+
+        /* Button Styles */
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Movie List Styles */
+        .movie-list-container {
+            margin-top: 30px;
+        }
+
+        .movie-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background-color: #fafafa;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .movie-stars {
+            color: #ffd700;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Add a Movie</h2>
+        
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input type="text" id="title" placeholder="Enter movie title">
+        </div>
+
+        <div class="form-group">
+            <label for="year">Year:</label>
+            <input type="number" id="year" placeholder="Enter release year">
+        </div>
+
+        <div class="form-group">
+            <label for="genre">Genre:</label>
+            <select id="genre">
+                <option value="Action">Action</option>
+                <option value="Comedy">Comedy</option>
+                <option value="Drama">Drama</option>
+                <option value="Sci-Fi">Sci-Fi</option>
+                <option value="Horror">Horror</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Rating:</label>
+            <div class="rating-container" id="starRating">
+                <span class="star" data-value="1">★</span>
+                <span class="star" data-value="2">★</span>
+                <span class="star" data-value="3">★</span>
+                <span class="star" data-value="4">★</span>
+                <span class="star" data-value="5">★</span>
+            </div>
+        </div>
+
+        <button onclick="addMovie()">Add Movie</button>
+
+        <div class="movie-list-container">
+            <h2>Movie List</h2>
+            <div id="movieList">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. State Variables ---
+        let currentRating = 0;
+        const LOCAL_STORAGE_KEY = 'movies';
+
+        // --- 2. Star Rating Logic for Form ---
+        const stars = document.querySelectorAll('.star');
+        
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                // Get the rating value from the clicked star
+                currentRating = parseInt(this.getAttribute('data-value'));
+                updateStarUI(currentRating);
+            });
+        });
+
+        // Function to color the stars up to the clicked value
+        function updateStarUI(rating) {
+            stars.forEach(star => {
+                if (parseInt(star.getAttribute('data-value')) <= rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        // --- 3. CRUD: Read Data from LocalStorage ---
+        function getMovies() {
+            const moviesString = localStorage.getItem(LOCAL_STORAGE_KEY);
+            // If data exists, parse it; otherwise, return an empty array
+            if (moviesString) {
+                return JSON.parse(moviesString);
+            } else {
+                return [];
+            }
+        }
+
+        // --- 4. Render Movies to the DOM ---
+        function displayMovies() {
+            const movieListDiv = document.getElementById('movieList');
+            const movies = getMovies();
+            
+            // Clear current list
+            movieListDiv.innerHTML = '';
+
+            // Loop through stored movies and build the HTML
+            movies.forEach(movie => {
+                // Generate the yellow stars string based on the saved rating
+                let starsHTML = '';
+                for (let i = 0; i < parseInt(movie.rating); i++) {
+                    starsHTML += '★';
+                }
+
+                // Create the movie item element matching the layout format
+                const movieDiv = document.createElement('div');
+                movieDiv.className = 'movie-item';
+                movieDiv.innerHTML = `
+                    ${movie.title} (${movie.year}) - ${movie.genre}, Rating: <span class="movie-stars">${starsHTML}</span>
+                `;
+                
+                movieListDiv.appendChild(movieDiv);
+            });
+        }
+
+        // --- 5. CRUD: Create / Add Data to LocalStorage ---
+        function addMovie() {
+            // Get values from the input fields
+            const titleInput = document.getElementById('title').value.trim();
+            const yearInput = document.getElementById('year').value.trim();
+            const genreInput = document.getElementById('genre').value;
+
+            // Basic validation to ensure fields aren't empty
+            if (!titleInput || !yearInput || currentRating === 0) {
+                alert("Please fill out the title, year, and select a rating.");
+                return;
+            }
+
+            // Create JS Object with stringified values as per instructions
+            const newMovie = {
+                title: titleInput,
+                year: yearInput.toString(),
+                genre: genreInput,
+                rating: currentRating.toString()
+            };
+
+            // Fetch existing movies, add new one, and save back to local storage
+            const movies = getMovies();
+            movies.push(newMovie);
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(movies));
+
+            // Reset form for the next entry
+            document.getElementById('title').value = '';
+            document.getElementById('year').value = '';
+            document.getElementById('genre').value = 'Action';
+            currentRating = 0;
+            updateStarUI(0);
+
+            // Update the display
+            displayMovies();
+        }
+
+        // --- 6. Initialization ---
+        // Display any existing movies when the page first loads
+        window.onload = () => {
+            displayMovies();
+        };
+    </script>
+
+</body>
+</html>
