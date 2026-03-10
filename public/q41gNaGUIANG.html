@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie Tracker</title>
+    <title>Movie Tracker - CRUD Complete</title>
     <style>
         /* CSS Implementation */
         * {
@@ -24,7 +24,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 500px;
+            max-width: 550px; /* Slightly wider to accommodate the delete button */
         }
 
         h2 {
@@ -64,16 +64,16 @@
         }
 
         .star {
-            color: #ccc; /* Default gray star */
+            color: #ccc;
             transition: color 0.2s;
         }
 
         .star.active {
-            color: #ffd700; /* Yellow star */
+            color: #ffd700;
         }
 
         /* Button Styles */
-        button {
+        button.add-btn {
             width: 100%;
             padding: 12px;
             background-color: #007bff;
@@ -86,11 +86,11 @@
             transition: background-color 0.2s;
         }
 
-        button:hover {
+        button.add-btn:hover {
             background-color: #0056b3;
         }
 
-        /* Movie List Styles */
+        /* Movie List & Delete Button Styles */
         .movie-list-container {
             margin-top: 30px;
         }
@@ -103,18 +103,41 @@
             background-color: #fafafa;
             font-size: 15px;
             color: #333;
+            display: flex; /* Flexbox to align text and button */
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .movie-info {
+            flex-grow: 1;
         }
 
         .movie-stars {
             color: #ffd700;
             letter-spacing: 2px;
         }
+
+        button.delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 10px;
+            transition: background-color 0.2s;
+        }
+
+        button.delete-btn:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>Add a Movie</h2>
+        <h2>Add / Update a Movie</h2>
         
         <div class="form-group">
             <label for="title">Title:</label>
@@ -148,7 +171,7 @@
             </div>
         </div>
 
-        <button onclick="addMovie()">Add Movie</button>
+        <button class="add-btn" onclick="addOrUpdateMovie()">Submit Movie</button>
 
         <div class="movie-list-container">
             <h2>Movie List</h2>
@@ -164,16 +187,13 @@
 
         // --- 2. Star Rating Logic for Form ---
         const stars = document.querySelectorAll('.star');
-        
         stars.forEach(star => {
             star.addEventListener('click', function() {
-                // Get the rating value from the clicked star
                 currentRating = parseInt(this.getAttribute('data-value'));
                 updateStarUI(currentRating);
             });
         });
 
-        // Function to color the stars up to the clicked value
         function updateStarUI(rating) {
             stars.forEach(star => {
                 if (parseInt(star.getAttribute('data-value')) <= rating) {
@@ -187,80 +207,114 @@
         // --- 3. CRUD: Read Data from LocalStorage ---
         function getMovies() {
             const moviesString = localStorage.getItem(LOCAL_STORAGE_KEY);
-            // If data exists, parse it; otherwise, return an empty array
-            if (moviesString) {
-                return JSON.parse(moviesString);
-            } else {
-                return [];
-            }
+            return moviesString ? JSON.parse(moviesString) : [];
         }
 
         // --- 4. Render Movies to the DOM ---
         function displayMovies() {
             const movieListDiv = document.getElementById('movieList');
             const movies = getMovies();
-            
-            // Clear current list
-            movieListDiv.innerHTML = '';
+            movieListDiv.innerHTML = ''; // Clear current list
 
-            // Loop through stored movies and build the HTML
-            movies.forEach(movie => {
-                // Generate the yellow stars string based on the saved rating
+            movies.forEach((movie, index) => {
+                // Round the average rating to the nearest whole number for the star display
+                let roundedRating = Math.round(parseFloat(movie.rating));
                 let starsHTML = '';
-                for (let i = 0; i < parseInt(movie.rating); i++) {
+                for (let i = 0; i < roundedRating; i++) {
                     starsHTML += '★';
                 }
 
-                // Create the movie item element matching the layout format
                 const movieDiv = document.createElement('div');
                 movieDiv.className = 'movie-item';
+                
+                // Show exact decimal rating alongside the stars, plus the new Delete button
                 movieDiv.innerHTML = `
-                    ${movie.title} (${movie.year}) - ${movie.genre}, Rating: <span class="movie-stars">${starsHTML}</span>
+                    <div class="movie-info">
+                        ${movie.title} (${movie.year}) - ${movie.genre}<br>
+                        Rating: ${parseFloat(movie.rating).toFixed(1)} <span class="movie-stars">${starsHTML}</span>
+                    </div>
+                    <button class="delete-btn" onclick="deleteMovie(${index})">Delete</button>
                 `;
                 
                 movieListDiv.appendChild(movieDiv);
             });
         }
 
-        // --- 5. CRUD: Create / Add Data to LocalStorage ---
-        function addMovie() {
-            // Get values from the input fields
+        // --- 5. CRUD: Create & Update Logic ---
+        function addOrUpdateMovie() {
             const titleInput = document.getElementById('title').value.trim();
             const yearInput = document.getElementById('year').value.trim();
             const genreInput = document.getElementById('genre').value;
 
-            // Basic validation to ensure fields aren't empty
             if (!titleInput || !yearInput || currentRating === 0) {
                 alert("Please fill out the title, year, and select a rating.");
                 return;
             }
 
-            // Create JS Object with stringified values as per instructions
-            const newMovie = {
-                title: titleInput,
-                year: yearInput.toString(),
-                genre: genreInput,
-                rating: currentRating.toString()
-            };
-
-            // Fetch existing movies, add new one, and save back to local storage
             const movies = getMovies();
-            movies.push(newMovie);
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(movies));
+            
+            // Check if movie already exists (case-insensitive search)
+            const existingMovieIndex = movies.findIndex(m => m.title.toLowerCase() === titleInput.toLowerCase());
 
-            // Reset form for the next entry
+            if (existingMovieIndex !== -1) {
+                // --- UPDATE OPERATION ---
+                const existingMovie = movies[existingMovieIndex];
+                
+                // Track how many times it's been rated to calculate a true average
+                const count = existingMovie.ratingCount ? parseInt(existingMovie.ratingCount) : 1; 
+                const oldRating = parseFloat(existingMovie.rating);
+                
+                // Calculate new average: ((Old Average * Old Count) + New Rating) / New Count
+                const newAverage = ((oldRating * count) + currentRating) / (count + 1);
+
+                existingMovie.year = yearInput.toString();
+                existingMovie.genre = genreInput;
+                existingMovie.rating = newAverage.toString();
+                existingMovie.ratingCount = (count + 1).toString();
+                
+            } else {
+                // --- CREATE OPERATION ---
+                const newMovie = {
+                    title: titleInput,
+                    year: yearInput.toString(),
+                    genre: genreInput,
+                    rating: currentRating.toString(),
+                    ratingCount: "1" // Initialize rating count for future averaging
+                };
+                movies.push(newMovie);
+            }
+
+            // Save to localStorage and re-render
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(movies));
+            resetForm();
+            displayMovies();
+        }
+
+        // --- 6. CRUD: Delete Logic ---
+        function deleteMovie(index) {
+            // Confirmation dialog before deleting
+            const confirmDelete = confirm("Are you sure you want to delete this movie?");
+            
+            if (confirmDelete) {
+                const movies = getMovies();
+                // Remove 1 item at the specified index
+                movies.splice(index, 1); 
+                // Save updated array to localStorage and re-render
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(movies));
+                displayMovies();
+            }
+        }
+
+        // Helper function to clear the inputs
+        function resetForm() {
             document.getElementById('title').value = '';
             document.getElementById('year').value = '';
             document.getElementById('genre').value = 'Action';
             currentRating = 0;
             updateStarUI(0);
-
-            // Update the display
-            displayMovies();
         }
 
-        // --- 6. Initialization ---
-        // Display any existing movies when the page first loads
+        // --- 7. Initialization ---
         window.onload = () => {
             displayMovies();
         };
